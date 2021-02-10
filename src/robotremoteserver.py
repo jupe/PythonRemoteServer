@@ -405,19 +405,19 @@ class KeywordRunner(object):
         args = self._handle_binary(args)
         kwargs = self._handle_binary(kwargs or {})
         result = KeywordResult()
-        with StandardStreamInterceptor() as interceptor:
+        # with StandardStreamInterceptor() as interceptor:
+        try:
+            return_value = self._keyword(*args, **kwargs)
+        except Exception:
+            result.set_error(*sys.exc_info())
+        else:
             try:
-                return_value = self._keyword(*args, **kwargs)
+                result.set_return(return_value)
             except Exception:
-                result.set_error(*sys.exc_info())
+                result.set_error(*sys.exc_info()[:2])
             else:
-                try:
-                    result.set_return(return_value)
-                except Exception:
-                    result.set_error(*sys.exc_info()[:2])
-                else:
-                    result.set_status('PASS')
-        result.set_output(interceptor.output)
+                result.set_status('PASS')
+        # result.set_output(interceptor.output)
         return result.data
 
     def _handle_binary(self, arg):
